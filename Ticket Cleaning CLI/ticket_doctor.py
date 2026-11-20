@@ -51,13 +51,17 @@ Catch JSON parse errors and validation errors separately
 """
 
 import json
+import sys
 
-def read_tickets(path:str) -> list:
+def read_tickets() -> list:
+    path = sys.argv[1]
     ticket_ids:set = set()
     cleaned_ticket:list = []
     
     with open(path, 'r', encoding='utf-8') as ticket_file:
+        count = 0
         for line_number, line in enumerate(ticket_file, start=1):
+            count += 1
             if line.strip():
                 try:
                     ticket = json.loads(line)
@@ -68,17 +72,18 @@ def read_tickets(path:str) -> list:
                     else:
                         raise ValueError("Invalid JSON. Missing id in ticket")
                 except json.JSONDecodeError as e:
-                    print(f"Line {line_number} [JSON Syntax Error]: {e.msg}")
+                    print(f"Line {line_number} [JSON Syntax Error]: {e.msg}", file=sys.stderr)
                 except (ValueError, KeyError) as e:
-                    print(f"Line {line_number} [Validation Error]: {e} ")
-                
+                    print(f"Line {line_number} [Validation Error]: {e} ", file=sys.stderr)
             else:
                 print(f"Skipping empty line number: {line_number}")
+                
+        print(f"Scanned {count} items from file.")    
     return cleaned_ticket
                 
                 
 
 
 if __name__ == "__main__":
-    tickets = read_tickets('./fixtures/tickets_dirty.jsonl')
+    tickets = read_tickets()
     print(tickets)
