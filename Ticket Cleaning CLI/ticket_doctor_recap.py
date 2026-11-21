@@ -66,7 +66,7 @@ def read_tickets() -> None:
                 rejected_json_output_file.write(f"{line}  Reason:{e} \n")
             print(f"Completed task for line number {line_number} \n")
         
-        
     
-    
+if __name__ == "__main__":
+    read_tickets()
     
