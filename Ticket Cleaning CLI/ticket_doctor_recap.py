@@ -69,8 +69,4 @@ def read_tickets() -> None:
         
     
     
-if __name__ == "__main__":
-    read_tickets()
-        
-    
     
