@@ -78,12 +78,106 @@ def read_tickets() -> list:
             else:
                 print(f"Skipping empty line number: {line_number}")
                 
-        print(f"Scanned {count} items from file.")    
+        print(f"Scanned {count} total item(s) from file.")    
     return cleaned_ticket
                 
                 
 
 
+"""
+A user needs to find and repair the bad records.
+Read tickets from path (UTF-8)
+Record line and reason for each rejection; explicitly reject blank lines
+Catch JSON parse errors and validation errors separately
+
+Addons
+Add --out-dir.
+(clean.jsonl and rejected.jsonl)
+Run python -m ticket_doctor fixtures/tickets_dirty.jsonl --out-dir out/tickets.
+
+Keep accepted rows in input order.
+Include original line number and reason for rejections; don't copy the ticket body into diagnostics.
+"""
+
+# Building output directory for tickets after read
+def build_out_dir() -> str:
+    output_action = sys.argv[2]
+    output_path = sys.argv[3]
+    
+    print(output_path)
+    
+    if output_action == "--out-dir":
+        path = Path(f"{output_path}")
+        path.mkdir(parents=True, exist_ok=True)
+        return SKIP_OUT_DIR_FALSE
+    else:
+        return SKIP_OUT_DIR
+    
+
+import json
+import sys
+from pathlib import Path
+
+SKIP_OUT_DIR = "SKIP_OUT_DIR"
+SKIP_OUT_DIR_FALSE = "SKIP_OUT_DIR_FALSE"
+
+CLEAN_TICKET_FILE_NAME = "clean.jsonl"
+REJECTED_TICKET_FILE_NAME = "rejected.jsonl"
+
+def build_clean_tickets() -> None:
+    should_skip_writeable_output = build_out_dir() == SKIP_OUT_DIR
+    
+    cleaned_tickets = []
+    rejected_tickets = []
+    accepted_ticket_ids = set()
+    
+    ticket_path = sys.argv[1]
+    
+    if not ticket_path:
+        print("Invalid path given to read ticket(s)")
+        sys.exit()
+        
+    with open(ticket_path, encoding='UTF-8', mode='r') as ticket_file:
+        for line_number, line in enumerate(ticket_file, start=1):  # start=1 is counter starts from 1
+            print(f"Scanning line number {line_number}")
+            
+            if not line:
+                print(f"[Empty Line]. Skipping line number {line_number}.")
+            
+            try:
+                ticket = json.loads(line)
+                ticket_id = ticket["id"].strip()
+                
+                if not ticket_id:
+                    raise ValueError(f"Missing ticket id in line number {line_number}")
+                if ticket_id in accepted_ticket_ids:
+                    raise ValueError(f"Duplicate ids found. Skipping line number {line_number}")
+                
+                accepted_ticket_ids.add(ticket_id.strip())
+                cleaned_tickets.append(ticket)
+                
+            except json.JSONDecodeError as e:
+                rejected_tickets.append(line)
+                print(f"[JSON Parse Error]. Error in line {line_number}. Message: {e.msg}")
+            except (ValueError, KeyError) as e:
+                rejected_tickets.append(line)
+                print(f"[Value/Key Error]. Error in line {line_number}. Message: {e}")
+    
+    if not should_skip_writeable_output:
+        clean_full_path = Path(f"{sys.argv[3]}/{CLEAN_TICKET_FILE_NAME}")
+        rejected_full_path = Path(f"{sys.argv[3]}/{REJECTED_TICKET_FILE_NAME}")
+        print(clean_full_path)
+        
+        with(
+            clean_full_path.open("w", encoding="UTF-8") as clean_tickets_writeable_file,
+            rejected_full_path.open("w", encoding="UTF-8") as rejected_tickets_writeable_file
+        ):
+            for clean in cleaned_tickets:
+                clean_tickets_writeable_file.write(json.dumps(clean) + "\n")
+            
+            for reject in rejected_tickets:
+                rejected_tickets_writeable_file.write(json.dumps(reject) + "\n")
+
+
 if __name__ == "__main__":
-    tickets = read_tickets()
-    print(tickets)
+    build_clean_tickets()
