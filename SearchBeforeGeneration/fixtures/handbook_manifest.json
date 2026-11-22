@@ -1,0 +1,7 @@
+[
+  {"path": "fixtures/handbook/billing.md", "version": 1, "active": true},
+  {"path": "fixtures/handbook/login.md", "version": 1, "active": true},
+  {"path": "fixtures/handbook/backup.md", "version": 1, "active": true},
+  {"path": "fixtures/handbook/exports.md", "version": 2, "active": true},
+  {"path": "fixtures/handbook/exports_archive.md", "version": 1, "active": false}
+]
