@@ -159,8 +159,10 @@ def search_overlap(query:str, chunks:list[dict], k = 3):
 
 import sys
 
-if __name__ == "__main__":
+def search_overlap_call() -> str:
     chunks_re = load_chunks()
     query_re = sys.argv[1].strip()
-    re = search_overlap(query_re, chunks_re)
-    print(re)
+    return search_overlap(query_re, chunks_re)
+
+if __name__ == "__main__":
+    search_overlap_call()

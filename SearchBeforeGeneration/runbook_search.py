@@ -1,10 +1,15 @@
+import json
 import re
+import sys
+
+from dataclasses import asdict
 
 from sklearn.feature_extraction.text import TfidfVectorizer
-from runbook_finder import load_chunks
 from sklearn.metrics.pairwise import cosine_similarity
 
 from search_result import SearchResult
+from runbook_finder import load_chunks
+from runbook_finder import search_overlap_call
 
 def search_tfidf(query:str, chunks:list[dict[str, str|bool|None]], k=3):
     ## Filter inactive section
@@ -16,6 +21,7 @@ def search_tfidf(query:str, chunks:list[dict[str, str|bool|None]], k=3):
     query_vector = vectorizer.transform([query])
 
     scores = cosine_similarity(query_vector, section_matrix).flatten()
+    results:list[SearchResult] = []
 
     ## The scores generated as based on chunks order so score[0] is pointing to
     ## active_chunks[0]
@@ -28,14 +34,22 @@ def search_tfidf(query:str, chunks:list[dict[str, str|bool|None]], k=3):
             source=active_chunks[index]["heading"],
             excerpt=active_chunks[index]["text"]
         )
+        results.append(result)
 
-        print(result)
+    return json.dumps([asdict(res) for res in results], indent=2, ensure_ascii=False)
 
 def _tokenize(value:str) -> list[str]:
     return re.findall("[a-z0-9]+(?:-[a-z0-9]+)*", value)
 
 
 if __name__ == "__main__":
-    q = "EXP-104 export limit"
-    search_tfidf(query=q, chunks=load_chunks())
+    query_re = sys.argv[1].strip()
+    ranker = sys.argv[3].strip()
 
+    if not query_re:
+        raise ValueError("Invalid run command. Argument 'query' missing")
+
+    if ranker == "overlap":
+        print(search_overlap_call())
+    else:
+        print(search_tfidf(query=query_re, chunks=load_chunks()))
