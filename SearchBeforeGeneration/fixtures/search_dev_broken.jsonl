@@ -1,0 +1,5 @@
+{"id":"q01","question":"What does EXP-104 mean?","expected_sections":["exports.md#export-limit"],"slice":"exact"}
+{"id":"q02","question":"How do I get a duplicate invoice copy?","expected_sections":["billing.md#duplicate-invoice-copy"],"slice":"exact"}
+{"id":"q03","question":"What do I need for a duplicate charge?","expected_sections":["billing.md#duplicate-link"],"slice":"exact"}
+{"id":"q04","question":"How long do login reset links last?","expected_sections":["login.md#reset-charge"],"slice":"exact"}
+{"id":"q05","question":"Can I schedule an export every Monday?","expected_sections":[],"slice":"missing"}

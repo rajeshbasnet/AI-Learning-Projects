@@ -36,6 +36,9 @@ def search_tfidf(query:str, chunks:list[dict[str, str|bool|None]], k=3):
         )
         results.append(result)
 
+    if len(results) <= 0:
+        print("No matching records found.")
+
     return json.dumps([asdict(res) for res in results], indent=2, ensure_ascii=False)
 
 def _tokenize(value:str) -> list[str]:
