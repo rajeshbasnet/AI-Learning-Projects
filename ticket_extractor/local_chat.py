@@ -3,7 +3,8 @@ from argparse import ArgumentParser
 import urllib
 import urllib.error
 
-from typing import TypedDict
+
+from typing import *
 from urllib.request import Request
 
 LOCAL_URL = "http://127.0.0.1:11434/api/chat"
@@ -25,6 +26,7 @@ class MessageRequest(TypedDict):
     messages:list[ChatMessage]
     think:bool
     stream:bool
+    format:Optional[dict[str,Any]]
 
 """
 localhost:11434/api/chat - send a request to model
